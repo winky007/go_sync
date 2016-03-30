@@ -1,33 +1,16 @@
 package main
 
 import (
-	"encoding/json"
+	//	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gansidui/gotcp/examples/echo"
-	"io/ioutil"
+	//"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"time"
 )
-
-type jsonParam struct {
-	File    string `json:"file"`
-	Md5     string `json:"md5"`
-	Content string `json:"content"`
-}
-
-type jsonResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Code    int64  `json:"code"`
-}
-
-func jsonReturn(j *jsonResponse) string {
-	res2B, _ := json.Marshal(j)
-	return string(res2B)
-}
 
 func main() {
 	filePtr := flag.String("file", "", "file path; etc: /var/log.txt")
@@ -51,17 +34,17 @@ func main() {
 	echoProtocol := &echo.EchoProtocol{}
 
 	for {
-		fmd5, err := md5File(file)
+		str, err := getFileContent(file)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		cByte, err := ioutil.ReadFile(file)
-		content := string(cByte)
-		jsResp := jsonParam{File: file, Md5: fmd5, Content: content}
-		res2B, _ := json.Marshal(jsResp)
-		js := string(res2B)
-		conn.Write(echo.NewEchoPacket([]byte(js), false).Serialize())
+		fmd5, err := md5String(str)
+		if err != nil {
+			log.Fatal(err)
+		}
+		data := file + "##%%^^##" + str + "##%%^^##" + fmd5
+		conn.Write(echo.NewEchoPacket([]byte(data), false).Serialize())
 		p, err := echoProtocol.ReadPacket(conn)
 		if err == nil {
 			echoPacket := p.(*echo.EchoPacket)
