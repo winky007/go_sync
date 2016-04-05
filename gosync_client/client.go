@@ -12,10 +12,28 @@ import (
 	"time"
 )
 
+func usage() {
+	fmt.Println("Usage: \n")
+	fmt.Println("-host etc: 127.0.0.1\n")
+	fmt.Println("-port etc: 8989\n")
+	fmt.Println("-file file path, etc: /var/log.txt\n")
+	fmt.Println("-dest remote server destination folder, etc: /tmp\n")
+}
+
 func main() {
+	if len(os.Args) != 5 {
+		usage()
+		return
+	}
 	filePtr := flag.String("file", "", "file path; etc: /var/log.txt")
+	hostPtr := flag.String("host", "", "host; etc: 127.0.0.1")
+	portPtr := flag.String("port", "", "port; etc: 8989")
+	destPtr := flag.String("dest", "", "etc: /tmp")
 	flag.Parse()
 	file := *filePtr
+	host := *hostPtr
+	port := *portPtr
+	dest := *destPtr
 
 	if file == "" {
 		log.Fatal("invalid file path")
@@ -26,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", "127.0.0.1:8989")
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", host+":"+port)
 	checkError(err)
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	checkError(err)
@@ -43,7 +61,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		data := file + "##%%^^##" + str + "##%%^^##" + fmd5
+		data := file + "##%%^^##" + str + "##%%^^##" + fmd5 + "##%%^^##" + dest
 		conn.Write(echo.NewEchoPacket([]byte(data), false).Serialize())
 		p, err := echoProtocol.ReadPacket(conn)
 		if err == nil {
