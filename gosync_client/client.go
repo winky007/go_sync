@@ -10,20 +10,23 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
 
 func usage() {
-	fmt.Println("Usage: \n")
-	fmt.Println("-host etc: 127.0.0.1\n")
-	fmt.Println("-port etc: 8989\n")
-	fmt.Println("-local local folder path, etc: /var/log\n")
-	fmt.Println("-dest remote server destination folder, etc: /tmp\n")
+	fmt.Println("Usage:")
+	fmt.Println("-host etc: 127.0.0.1")
+	fmt.Println("-port etc: 8989")
+	fmt.Println("-local local folder path, etc: /var/log or /var/log/log.txt")
+	fmt.Println("-dest remote server destination folder, etc: /tmp")
+	fmt.Println("-usereg optional, 1 or 0")
+	fmt.Println("-regexp optional, use regexp to filter content, etc: start.*endstart")
 }
 
 func main() {
-	if len(os.Args) != 5 {
+	if len(os.Args) < 5 {
 		usage()
 		return
 	}
@@ -31,11 +34,16 @@ func main() {
 	hostPtr := flag.String("host", "", "host; etc: 127.0.0.1")
 	portPtr := flag.String("port", "", "port; etc: 8989")
 	destPtr := flag.String("dest", "", "etc: /tmp")
+	useregPtr := flag.Int("usereg", 0, "1 or 0")
+	regexpPtr := flag.String("regexp", "", "use regexp to filter content, etc: \"start.*endstart\"")
+
 	flag.Parse()
 	local := *localPtr
 	host := *hostPtr
 	port := *portPtr
 	dest := *destPtr
+	usereg := *useregPtr
+	regexpStr := *regexpPtr
 
 	if local == "" {
 		log.Fatal("invalid local folder path")
@@ -73,6 +81,11 @@ func main() {
 			str, err := getFileContent(file)
 			if err != nil {
 				log.Fatal(err)
+			}
+			if usereg == 1 && regexpStr != "" {
+				re := regexp.MustCompile(regexpStr)
+				strSlice := re.FindAllString(str, -1)
+				str = strings.Join(strSlice, "")
 			}
 
 			fmd5, err := md5String(str)
