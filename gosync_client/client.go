@@ -22,7 +22,7 @@ func usage() {
 	fmt.Println("-local local folder path, etc: /var/log or /var/log/log.txt")
 	fmt.Println("-dest remote server destination folder, etc: /tmp")
 	fmt.Println("-usereg optional, 1 or 0")
-	fmt.Println("-regexp optional, use regexp to filter content, etc: start.*endstart")
+	fmt.Println("-regexp optional, use regexp to filter content, etc: \"start.*endstar\"t")
 }
 
 func main() {
