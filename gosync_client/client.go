@@ -21,6 +21,7 @@ func usage() {
 	fmt.Println("-port etc: 8989")
 	fmt.Println("-local local folder path, etc: /var/log or /var/log/log.txt")
 	fmt.Println("-dest remote server destination folder, etc: /tmp")
+	fmt.Println("-interval, optional, sync's internal time, unit is second , default is 3 seconds, etc: 3")
 	fmt.Println("-usereg optional, 1 or 0")
 	fmt.Println("-regexp optional, use regexp to filter content, etc: \"start.*endstart\"")
 }
@@ -30,18 +31,20 @@ func main() {
 		usage()
 		return
 	}
-	localPtr := flag.String("local", "", "local folder path; etc: /var/log.txt")
+	localPtr := flag.String("local", "", "local folder path or file path; etc: /var/log/ or /var/log.txt")
 	hostPtr := flag.String("host", "", "host; etc: 127.0.0.1")
 	portPtr := flag.String("port", "", "port; etc: 8989")
 	destPtr := flag.String("dest", "", "etc: /tmp")
-	useregPtr := flag.Int("usereg", 0, "1 or 0")
-	regexpPtr := flag.String("regexp", "", "use regexp to filter content, etc: \"start.*endstart\"")
+	intervalPtr := flag.Int("interval", 3, "sync's internal time, unit is second , default is 3 seconds; etc: 3")
+	useregPtr := flag.Int("usereg", 0, "optional, 1 or 0")
+	regexpPtr := flag.String("regexp", "", "optional, use regexp to filter content, etc: \"start.*endstart\"")
 
 	flag.Parse()
 	local := *localPtr
 	host := *hostPtr
 	port := *portPtr
 	dest := *destPtr
+	interval := *intervalPtr
 	usereg := *useregPtr
 	regexpStr := *regexpPtr
 
@@ -106,7 +109,7 @@ func main() {
 				fmt.Printf("Server reply:[%v] [%v]\n", echoPacket.GetLength(), string(echoPacket.GetBody()))
 			}
 		}
-		time.Sleep(3 * time.Second)
+		time.Sleep(time.Duration(interval) * time.Second)
 	}
 
 	conn.Close()

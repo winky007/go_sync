@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gansidui/gotcp"
 	"github.com/gansidui/gotcp/examples/echo"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -108,10 +110,26 @@ func (this *Callback) OnClose(c *gotcp.Conn) {
 	fmt.Println("OnClose:", c.GetExtraData())
 }
 
-func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+func usage() {
+	fmt.Println("Usage:")
+	fmt.Println("-port etc: 8989")
+}
 
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", ":8989")
+func main() {
+	if len(os.Args) < 2 {
+		usage()
+		return
+	}
+	portPtr := flag.Int("port", 8989, "tcp server port, etc: 8989")
+	flag.Parse()
+	port := *portPtr
+	if port < 0 {
+		usage()
+		return
+	}
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", ":"+strconv.Itoa(port))
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
